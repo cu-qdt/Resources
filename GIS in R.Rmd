@@ -1,0 +1,100 @@
+---
+title: "GIS in R"
+author: "Collin Schwantes"
+date: "January 12, 2016"
+output: html_document
+---
+This document contains helpful resources for using R as GIS. It contains links to technical materials that are useful for understanding the materials behind R spatial packages. 
+
+###Great Intro to R as GIS:
+[https://www.nceas.ucsb.edu/~frazier/RSpatialGuides/OverviewCoordinateReferenceSystems.pdf](https://www.nceas.ucsb.edu/~frazier/RSpatialGuides/OverviewCoordinateReferenceSystems.pdf)
+
+This document provides an overview of working with vector and raster files in R. It briefly explains core concepts and has good visuals.
+
+### Cheat sheet with links
+
+http://www.maths.lancs.ac.uk/~rowlings/Teaching/UseR2012/cheatsheet.html
+
+###Tutorial for spatial data with emphasis on visualization:
+[http://spatial.ly/r/](http://spatial.ly/r/)  
+
+This site provides multiple tutorials for using R as a GIS and using ggplot2/ggvis/ggmap to visualize outputs. Great for people who like plyr and ggplot2.
+
+
+###Reference for spatial data using base graphics
+[https://pakillo.github.io/R-GIS-tutorial/](https://pakillo.github.io/R-GIS-tutorial/)
+
+This is a great reference for working with spatial data. Its code heavy, so make sure you have some understanding of whats going on before you use it. 
+
+###CRS Arguments:
+[ftp://ftp.remotesensing.org/proj/OF90-284.pdf](ftp://ftp.remotesensing.org/proj/OF90-284.pdf)
+
+This document describes PROJ.4 (*well techinically proj.3*) and provides insight in to CRS arguments. It tells you what parameters you can control for different projections. This is important when you're working with rasters of different projections
+
+###Extracting data from categorical Rasters:
+[http://mbjoseph.github.io/2014/11/08/nlcd.html](http://mbjoseph.github.io/2014/11/08/nlcd.html)
+
+This blog post shows you how to extract data from a categorical raster. Its easy to understand and to optimize for your own work flow. 
+
+###Applied Spatial Data Analysis with R:
+[http://gis.humboldt.edu/OLM/r/Spatial%20Analysis%20With%20R.pdf](http://gis.humboldt.edu/OLM/r/Spatial%20Analysis%20With%20R.pdf)
+
+The book on R as GIS. Accessible if you have an intermediate understanding of GIS and R. 
+
+
+### Understanding the package httr so you can make http requests for data
+[https://cran.r-project.org/web/packages/httr/vignettes/quickstart.html](https://cran.r-project.org/web/packages/httr/vignettes/quickstart.html)
+
+* for additional helps see [http://stackoverflow.com/questions/27371372/httr-retrieving-data-with-post](http://stackoverflow.com/questions/27371372/httr-retrieving-data-with-post)
+
+### Function for extracting elevations from [http://nationalmap.gov/epqs/](http://nationalmap.gov/epqs/):
+I built this simple loop to extract elevation data. It requires that you have a dataframe or spatial object with latitude and longitude in decimal degrees. I should modify it so that its an actual function.
+
+```
+#object used to store products of loop
+elev.list <- list()
+
+for( i in 1:length(tbn.sp@data$lon))
+  {
+  query <- list(
+    x = as.character( tbn.sp@data$Trusted.Longitude[i]),
+    y = as.character(tbn.sp@data$Trusted.Latitude[i]),
+    units="Meters",
+    output="json"
+  )
+  #GET data from elevation point query system
+  elev <- GET(url = "HTTP://nationalmap.gov/epqs/pqs.php", 
+              query = query
+  )
+  
+  elev.res <- content(elev, "parsed") #give json data particular structure
+  
+  #errors from data type
+  if(class(elev.res) == "list"){
+  elevation  <- elev.res$USGS_Elevation_Point_Query_Service$Elevation_Query$Elevation
+  elev.list[i] <- elevation} else {
+    error_msg <- paste("error in ",i) 
+    print(error_msg) #print error to easily find location
+    elev.list[i] <- error_msg #insert error for Na's
+  }
+  
+  print(i) # counter/tracker of iterations 
+  Sys.sleep(.1) #delay to avoid appearing to be an attack on the server
+  
+}  
+```
+
+### Understanding GDAL
+[http://opengeoportal.org/software/resources/gdal-and-open-source-geoprocessing-tutorials/](http://opengeoportal.org/software/resources/gdal-and-open-source-geoprocessing-tutorials/)
+
+Great collection of tutorials and resources for understanding GDAL 
+
+### Learning ArcPy 
+[http://gis.stackexchange.com/questions/53816/what-are-some-resources-for-learning-arcpy](http://gis.stackexchange.com/questions/53816/what-are-some-resources-for-learning-arcpy)
+
+Community Wiki for ArcPy in ArcGIS
+
+### R and Arc Integration
+[https://r-arcgis.github.io/](https://r-arcgis.github.io/)
+
+Bride between ArcGIS and R allowing you to run some analyses in R. 
